@@ -1,0 +1,101 @@
+#Import required libraries
+import pandas as pd
+import json
+
+# API URL
+api_url = "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DA0321EN-SkillsNetwork/labs/module%201/Accessing%20Data%20Using%20APIs/jobs.json"
+
+def get_number_of_jobs_T(technology):
+    # Fetch data from API
+    response = requests.get(api_url)
+    if response.status_code != 200:
+        return f"Error: Unable to fetch data, status code {response.status_code}"
+    
+    jobs_data = response.json()  # Convert JSON response to a Python list
+    
+    # Convert to DataFrame
+    df = pd.DataFrame(jobs_data)
+
+    # Check if "Job Title" column exists
+    if "Job Title" not in df.columns:
+        return f"Error: 'Job Title' column not found in data"
+
+    # Filter jobs where Job Title contains the technology
+    number_of_jobs = df["Job Title"].str.contains(technology, case=False, na=False).sum()
+
+    return f"Technology: {technology}, Number of Jobs: {number_of_jobs}"
+
+print(get_number_of_jobs_T("Python"))
+
+import requests
+import json
+
+# API URL
+api_url = "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DA0321EN-SkillsNetwork/labs/module%201/Accessing%20Data%20Using%20APIs/jobs.json"
+
+def get_number_of_jobs_L(location):
+    """
+    This function fetches job data and returns the number of jobs available
+    in a specific US location.
+    """
+    response = requests.get(api_url)
+    
+    # Check if the API request was successful
+    if response.status_code != 200:
+        return f"Error: Unable to fetch data, status code {response.status_code}"
+
+    jobs_data = response.json()  # Convert JSON response into Python list
+    
+    # Filter jobs by location
+    count = 0
+    for job in jobs_data:
+        if "Location" in job and location.lower() in job["Location"].lower():
+            count += 1  
+
+    return f"Number of jobs in {location}: {count}"
+
+#your code goes here
+print(get_number_of_jobs_L("Los Angeles"))
+
+# your code goes here
+import requests
+from openpyxl import Workbook  # Import Workbook class for Excel handling
+
+# Define the API URL
+api_url = "https://cf-courses-data.s3.us.cloud-object-storage.appdomain.cloud/IBM-DA0321EN-SkillsNetwork/labs/module%201/Accessing%20Data%20Using%20APIs/jobs.json"
+
+# Define the list of technologies
+technologies = ["C", "C#", "C++", "Java", "JavaScript", "Python", "Scala", 
+                "Oracle", "SQL Server", "MySQL Server", "PostgreSQL", "MongoDB"]
+
+# Function to fetch job counts for a specific technology
+def get_number_of_jobs_T(technology):
+    response = requests.get(api_url)
+    
+    if response.status_code != 200:
+        return f"Error: Unable to fetch data, status code {response.status_code}"
+
+    jobs_data = response.json()  # Convert JSON response into Python list
+    
+    # Count occurrences of the technology in job titles
+    count = sum(1 for job in jobs_data if "Title" in job and technology.lower() in job["Title"].lower())
+
+    return count
+
+# Create an Excel workbook and worksheet
+wb = Workbook()
+ws = wb.active
+ws.title = "Job Postings"
+
+# Write header row
+ws.append(["Technology", "Number of Jobs"])
+
+# Fetch job counts and write to Excel
+for tech in technologies:
+    job_count = get_number_of_jobs_T(tech)
+    ws.append([tech, job_count])
+
+# Save the Excel file
+wb.save("job-postings.xlsx")
+
+print("Job postings data saved successfully in job-postings.xlsx")
